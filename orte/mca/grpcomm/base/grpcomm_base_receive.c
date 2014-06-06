@@ -216,6 +216,15 @@ static void app_recv(int status, orte_process_name_t* sender,
                                  coll->id));
             
             if (id == coll->id) {
+
+#ifdef WANT_ORTE_TIMINGS
+                {
+                    char buff[512];
+                    sprintf(buff, "app_recv[%d](glob) from %s. Finishing collective: next_cb=%p, cbfunc=%p\n",
+                            id, ORTE_NAME_PRINT(sender), coll->next_cb,coll->cbfunc);
+                    orte_grpcomm_add_timestep(coll, buff);
+                }
+#endif
                 /* see if the collective needs another step */
                 if (NULL != coll->next_cb) {
                     /* have to go here next */
@@ -281,6 +290,14 @@ static void app_recv(int status, orte_process_name_t* sender,
          */
         added = true;
     }
+
+#ifdef WANT_ORTE_TIMINGS
+    {
+        char buff[512];
+        sprintf(buff, "app_recv[%d](non-glob) from %s",id, ORTE_NAME_PRINT(sender));
+        orte_grpcomm_add_timestep(coll, buff);
+    }
+#endif
     /* append the sender to the list of targets so
      * we know we already have their contribution
      */
@@ -304,6 +321,13 @@ static void app_recv(int status, orte_process_name_t* sender,
         /* replace whatever is in the collective's buffer
          * field with what we collected
          */
+#ifdef WANT_ORTE_TIMINGS
+        {
+            char buff[512];
+            sprintf(buff, "app_recv[%d](non-glob) from %s. Finishing",id,ORTE_NAME_PRINT(sender));
+            orte_grpcomm_add_timestep(coll, buff);
+        }
+#endif
         OBJ_DESTRUCT(&coll->buffer);
         OBJ_CONSTRUCT(&coll->buffer, opal_buffer_t);
         opal_dss.copy_payload(&coll->buffer, &coll->local_bucket);
@@ -461,6 +485,14 @@ static void daemon_local_recv(int status, orte_process_name_t* sender,
      */
     coll = orte_grpcomm_base_setup_collective(id);
 
+#ifdef WANT_ORTE_TIMINGS
+    {
+        char buff[512];
+        sprintf(buff, "daemon_local_recv[%d] ",id);
+        orte_grpcomm_add_timestep(coll, buff);
+    }
+#endif
+
     /* record this proc's participation and its data */
     coll->num_local_recvd++;
     opal_dss.copy_payload(&coll->local_bucket, buffer);
@@ -558,6 +590,14 @@ void orte_grpcomm_base_progress_collectives(void)
             relay = OBJ_NEW(opal_buffer_t);
             orte_grpcomm_base_pack_collective(relay, jdata->jobid,
                                               coll, ORTE_GRPCOMM_INTERNAL_STG_LOCAL);
+
+#ifdef WANT_ORTE_TIMINGS
+            {
+                char buff[512];
+                sprintf(buff, "[%d] locally complete",coll->id);
+                orte_grpcomm_add_timestep(coll, buff);
+            }
+#endif
             /* send it to our global collective handler */
             if (0 > (rc = orte_rml.send_buffer_nb(ORTE_PROC_MY_NAME, relay,
                                                   ORTE_RML_TAG_DAEMON_COLL,
@@ -609,6 +649,8 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
      */
     coll = orte_grpcomm_base_setup_collective(id);
 
+
+
     /* record that we received a bucket */
     coll->num_peer_buckets++;
 
@@ -657,6 +699,15 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
         OPAL_OUTPUT_VERBOSE((5, orte_grpcomm_base_framework.framework_output,
                              "%s grpcomm:base:daemon_coll: CANNOT PROGRESS",
                              ORTE_NAME_PRINT(ORTE_PROC_MY_NAME)));
+
+#ifdef WANT_ORTE_TIMINGS
+            {
+                char buff[512];
+                sprintf(buff, "[%d] daemon_coll_recv: peer_buckets=%d, global_recvd=%d",
+                        coll->id, coll->num_peer_buckets, coll->num_global_recvd);
+                orte_grpcomm_add_timestep(coll, buff);
+            }
+#endif
         return;
     }
 
@@ -685,7 +736,10 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
     /* relay the data, if required */
     if (np == coll->num_peer_buckets) {
         orte_routed.get_routing_list(ORTE_GRPCOMM_COLL_RELAY, coll);
-
+#ifdef WANT_ORTE_TIMINGS
+        int count = 0;
+        int wildcard = 0;
+#endif
         while (NULL != (nm = (orte_namelist_t*)opal_list_remove_first(&coll->targets))) {
             OPAL_OUTPUT_VERBOSE((5, orte_grpcomm_base_framework.framework_output,
                                  "%s grpcomm:base:daemon_coll: RELAYING COLLECTIVE TO %s",
@@ -698,6 +752,9 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                 /* this is going to everyone in this job, so use xcast */
                 orte_grpcomm.xcast(nm->name.jobid, relay, ORTE_RML_TAG_DAEMON_COLL);
                 OBJ_RELEASE(relay);
+#ifdef WANT_ORTE_TIMINGS
+                wildcard = 1;
+#endif
             }
             /* otherwise, send to each member, but don't send it back to the
              * sender as that can create an infinite loop
@@ -712,7 +769,20 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                 }
             }
             OBJ_RELEASE(nm);
+#ifdef WANT_ORTE_TIMINGS
+            count++;
+#endif
+
         }
+
+#ifdef WANT_ORTE_TIMINGS
+            {
+                char buff[512];
+                sprintf(buff, "[%d] daemon_coll_recv: relay to %d peers, widcard=%d",
+                        coll->id, count, wildcard);
+                orte_grpcomm_add_timestep(coll, buff);
+            }
+#endif
     }
     /* clear the list for reuse */
     while (NULL != (nm = (orte_namelist_t*)opal_list_remove_first(&coll->targets))) {
@@ -745,6 +815,14 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                              ORTE_NAME_PRINT(ORTE_PROC_MY_NAME),
                              ORTE_VPID_PRINT(np),
                              ORTE_VPID_PRINT(coll->num_global_recvd)));
+#ifdef WANT_ORTE_TIMINGS
+        {
+            char buff[512];
+            sprintf(buff, "[%d] daemon_coll_recv missing contributors: peer_buckets=%d, global_recvd=%d, np=%d",
+                    coll->id, coll->num_peer_buckets, coll->num_global_recvd, np);
+            orte_grpcomm_add_timestep(coll, buff);
+        }
+#endif
         return;
     }
 
@@ -773,6 +851,15 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
             }
         }
     }
+
+#ifdef WANT_ORTE_TIMINGS
+            {
+                char buff[512];
+                sprintf(buff, "[%d] daemon_coll_recv: relay response to childrens",
+                        coll->id);
+                orte_grpcomm_add_timestep(coll, buff);
+            }
+#endif
 
     /* remove this collective */
     opal_list_remove_item(&orte_grpcomm_base.active_colls, &coll->super);

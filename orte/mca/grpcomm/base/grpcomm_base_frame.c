@@ -134,6 +134,13 @@ static void collective_constructor(orte_grpcomm_collective_t *ptr)
     OBJ_CONSTRUCT(&ptr->targets, opal_list_t);
     ptr->next_cb = NULL;
     ptr->next_cbdata = NULL;
+
+#ifdef WANT_ORTE_TIMINGS
+    {
+        OBJ_CONSTRUCT(&(ptr->timings), opal_list_t);
+        orte_grpcomm_add_timestep(ptr,"Initialize");
+    }
+#endif
 }
 static void collective_destructor(orte_grpcomm_collective_t *ptr)
 {
@@ -149,6 +156,16 @@ static void collective_destructor(orte_grpcomm_collective_t *ptr)
         OBJ_RELEASE(item);
     }
     OBJ_DESTRUCT(&ptr->targets);
+
+#ifdef WANT_ORTE_TIMINGS
+    {
+        orte_grpcomm_add_timestep(ptr,"Finish");
+        orte_grpcomm_output_timings(ptr);
+        orte_grpcomm_clear_timings(ptr);
+        OPAL_LIST_DESTRUCT(&(ptr->timings));
+        OBJ_DESTRUCT(&(ptr->timings));
+    }
+#endif
 }
 OBJ_CLASS_INSTANCE(orte_grpcomm_collective_t,
                    opal_list_item_t,

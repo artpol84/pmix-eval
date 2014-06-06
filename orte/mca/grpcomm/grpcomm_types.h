@@ -36,6 +36,9 @@
  */
 
 #include "orte_config.h"
+#include "opal/util/output.h"
+
+#define WANT_ORTE_TIMINGS
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -110,9 +113,73 @@ typedef struct {
      */
     orte_grpcomm_collective_cbfunc_t next_cb;
     void *next_cbdata;
+
+#ifdef WANT_ORTE_TIMINGS
+    opal_list_t timings;
+#endif
 } orte_grpcomm_collective_t;
 ORTE_DECLSPEC OBJ_CLASS_DECLARATION(orte_grpcomm_collective_t);
 
+// ORTE Timings
+#ifdef WANT_ORTE_TIMINGS
+#include "opal/class/opal_list.h"
+typedef struct {
+    opal_list_item_t super;
+    char *step_name;
+    double timestep;
+} orte_grpcomm_colltimings_t;
+
+inline static double orte_grpcomm_get_timestamp(){
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    double ret = tv.tv_sec + tv.tv_usec*1E-6;
+    return ret;
+}
+
+inline static void orte_grpcomm_add_timestep(orte_grpcomm_collective_t *coll,
+                                               char *step_name)
+{
+    orte_grpcomm_colltimings_t *elem;
+    elem = (void*)malloc(sizeof(*elem));
+    if( elem == NULL ){
+        // Do some error handling
+    }
+    elem->step_name = strdup(step_name);
+    elem->timestep = orte_grpcomm_get_timestamp();
+    opal_list_append (&(coll->timings), (opal_list_item_t *)elem);
+}
+
+inline static void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
+{
+    orte_grpcomm_colltimings_t *el, *prev;
+    int count = 0;
+    OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
+        count++;
+        if( count > 1){
+            opal_output(0,"GRPCOMM Timings:\n\t from %s\n\tto %s\n\t\tSECONDS: %lf\n",
+                        prev->step_name, el->step_name,
+                        el->timestep - prev->timestep);
+            prev = el;
+        }else{
+            prev = el;
+        }
+    }
+}
+
+inline static void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
+{
+    orte_grpcomm_colltimings_t *el, *prev;
+    int count = 0;
+    OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
+        if( el->step_name )
+            free(el->step_name);
+    }
+}
+
+
+#endif
+
 END_C_DECLS
+
 
 #endif
