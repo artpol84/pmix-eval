@@ -155,6 +155,7 @@ inline static void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
     int count = 0;
     int size = opal_list_get_size(&(coll->timings));
     char *buf = malloc(size*(60+512));
+    buf[0] = '\0';
     OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
         count++;
         if( count > 1){
@@ -167,6 +168,7 @@ inline static void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
         }
     }
     opal_output(0,"%s",buf);
+    free(buf);
 }
 
 inline static void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
