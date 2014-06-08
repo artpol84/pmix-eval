@@ -71,6 +71,8 @@ int orte_grpcomm_base_comm_start(void)
     
     if (!recv_issued) {
         if (ORTE_PROC_IS_HNP || ORTE_PROC_IS_DAEMON) {
+
+            opal_output(0,"Initialize grpcomm collectives\n");
             orte_rml.recv_buffer_nb(ORTE_NAME_WILDCARD,
                                     ORTE_RML_TAG_COLLECTIVE,
                                     ORTE_RML_PERSISTENT,
