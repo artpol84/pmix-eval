@@ -706,8 +706,9 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
 #ifdef WANT_ORTE_TIMINGS
             {
                 char buff[512];
-                sprintf(buff, "[%d] daemon_coll_recv: peer_buckets=%d, global_recvd=%d",
-                        coll->id, coll->num_peer_buckets, coll->num_global_recvd);
+                sprintf(buff, "[%d] daemon_coll_recv from %s: peer_buckets=%d, global_recvd=%d",
+                        coll->id, ORTE_NAME_PRINT(sender),
+                        coll->num_peer_buckets, coll->num_global_recvd);
                 orte_grpcomm_add_timestep(coll, buff);
             }
 #endif
@@ -781,8 +782,8 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
 #ifdef WANT_ORTE_TIMINGS
             {
                 char buff[512];
-                sprintf(buff, "[%d] daemon_coll_recv: relay to %d peers, widcard=%d",
-                        coll->id, count, wildcard);
+                sprintf(buff, "[%d] daemon_coll_recv from %s: relay to %d peers, widcard=%d",
+                        coll->id, ORTE_NAME_PRINT(sender), count, wildcard);
                 orte_grpcomm_add_timestep(coll, buff);
             }
 #endif
@@ -821,8 +822,8 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
 #ifdef WANT_ORTE_TIMINGS
         {
             char buff[512];
-            sprintf(buff, "[%d] daemon_coll_recv missing contributors: peer_buckets=%d, global_recvd=%d, np=%d",
-                    coll->id, coll->num_peer_buckets, coll->num_global_recvd, np);
+            sprintf(buff, "[%d] daemon_coll_recv from %s: missing contributors: peer_buckets=%d, global_recvd=%d, np=%d",
+                    coll->id, ORTE_NAME_PRINT(sender), coll->num_peer_buckets, coll->num_global_recvd, np);
             orte_grpcomm_add_timestep(coll, buff);
         }
 #endif
@@ -858,8 +859,8 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
 #ifdef WANT_ORTE_TIMINGS
             {
                 char buff[512];
-                sprintf(buff, "[%d] daemon_coll_recv: relay response to childrens",
-                        coll->id);
+                sprintf(buff, "[%d] daemon_coll_recv from %s: relay response to childrens",
+                        coll->id, ORTE_NAME_PRINT(sender));
                 orte_grpcomm_add_timestep(coll, buff);
             }
 #endif
