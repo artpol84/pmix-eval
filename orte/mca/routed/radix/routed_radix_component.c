@@ -61,6 +61,7 @@ static int orte_routed_radix_component_register(void)
                                            OPAL_INFO_LVL_9,
                                            MCA_BASE_VAR_SCOPE_READONLY,
                                            &mca_routed_radix_component.radix);
+    opal_output(0,"RADIX SIZE is %d\n",mca_routed_radix_component.radix);
 
     mca_routed_radix_component.max_connections = -1;
     (void) mca_base_component_var_register(c, "max_connections",
