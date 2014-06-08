@@ -805,11 +805,11 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
     }
 
     if (np == coll->num_peer_buckets) {
-
         OPAL_OUTPUT_VERBOSE((5, orte_grpcomm_base_framework.framework_output,
                              "%s grpcomm:base:daemon_coll: data was relayed, nothing to do",
                              ORTE_NAME_PRINT(ORTE_PROC_MY_NAME) ));
-
+        opal_output(0,"%s grpcomm:base:daemon_coll: data was relayed, nothing to do",
+                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME) ));
         /* remove this collective */
         opal_list_remove_item(&orte_grpcomm_base.active_colls, &coll->super);
         OBJ_RELEASE(coll);
