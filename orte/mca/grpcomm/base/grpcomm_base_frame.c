@@ -99,8 +99,8 @@ void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
         if( el->step_name )
             free(el->step_name);
     }
-    opal_output(0,"%s orte_grpcomm_clear_timings: 0x%p %s\n",
-                ORTE_NAME_PRINT((&orte_process_info.my_name)), coll, step_name);
+    opal_output(0,"%s orte_grpcomm_clear_timings: 0x%p\n",
+                ORTE_NAME_PRINT((&orte_process_info.my_name)), coll);
 }
 
 // --------------------------------
