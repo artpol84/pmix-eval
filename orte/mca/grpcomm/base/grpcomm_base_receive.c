@@ -485,13 +485,6 @@ static void daemon_local_recv(int status, orte_process_name_t* sender,
      */
     coll = orte_grpcomm_base_setup_collective(id);
 
-#ifdef WANT_ORTE_TIMINGS
-    {
-        char buff[512];
-        sprintf(buff, "daemon_local_recv[%d] ",id);
-        orte_grpcomm_add_timestep(coll, buff);
-    }
-#endif
 
     /* record this proc's participation and its data */
     coll->num_local_recvd++;
@@ -500,6 +493,16 @@ static void daemon_local_recv(int status, orte_process_name_t* sender,
     OPAL_OUTPUT_VERBOSE((5, orte_grpcomm_base_framework.framework_output,
                          "%s PROGRESSING COLLECTIVE %d",
                          ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), id));
+#ifdef WANT_ORTE_TIMINGS
+    {
+        char buff[512];
+        sprintf(buff, "daemon_local_recv[%d] from %s. local recvd=%d",
+                id, ORTE_NAME_PRINT(sender), coll->num_local_recvd);
+        orte_grpcomm_add_timestep(coll, buff);
+    }
+#endif
+
+
     orte_grpcomm_base_progress_collectives();
 }
 
