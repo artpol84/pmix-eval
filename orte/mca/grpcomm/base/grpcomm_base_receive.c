@@ -854,6 +854,14 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
         if (ORTE_VPID_WILDCARD == nm->name.vpid) {
             orte_grpcomm.xcast(nm->name.jobid, relay, ORTE_RML_TAG_COLLECTIVE);
             OBJ_RELEASE(relay);
+#ifdef WANT_ORTE_TIMINGS
+            {
+                char buff[512];
+                sprintf(buff, "[%d] daemon_coll_recv from %s: xcast response",
+                        coll->id, ORTE_NAME_PRINT(sender));
+                orte_grpcomm_add_timestep(coll, buff);
+            }
+#endif
         } else {
             /* send it to this proc */
             if (0 > orte_rml.send_buffer_nb(&nm->name, relay, ORTE_RML_TAG_COLLECTIVE,
@@ -861,13 +869,21 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                 ORTE_ERROR_LOG(ORTE_ERR_COMM_FAILURE);
                 OBJ_RELEASE(relay);
             }
+#ifdef WANT_ORTE_TIMINGS
+            {
+                char buff[512];
+                sprintf(buff, "[%d] daemon_coll_recv from %s: send directly to %s",
+                        coll->id, ORTE_NAME_PRINT(sender), ORTE_NAME_PRINT(&nm->name));
+                orte_grpcomm_add_timestep(coll, buff);
+            }
+#endif
         }
     }
 
 #ifdef WANT_ORTE_TIMINGS
             {
                 char buff[512];
-                sprintf(buff, "[%d] daemon_coll_recv from %s: relay response to childrens",
+                sprintf(buff, "[%d] daemon_coll_recv from %s: free collective",
                         coll->id, ORTE_NAME_PRINT(sender));
                 orte_grpcomm_add_timestep(coll, buff);
             }
