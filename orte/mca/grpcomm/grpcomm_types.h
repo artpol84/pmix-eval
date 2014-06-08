@@ -153,17 +153,20 @@ inline static void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
 {
     orte_grpcomm_colltimings_t *el, *prev;
     int count = 0;
+    int size = opal_list_get_size(&(coll->timings));
+    char *buf = malloc(size*(60+512));
     OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
         count++;
         if( count > 1){
-            opal_output(0,"GRPCOMM Timings:\n\t from %s\n\tto %s\n\t\tSECONDS: %lf\n",
-                        prev->step_name, el->step_name,
-                        el->timestep - prev->timestep);
+            sprintf(buf,"%s[GRPCOMM Timings] %lfs[%lfs]: %s\n",buf,
+                    el->timestep, el->timestep - prev->timestep,
+                    el->step_name);
             prev = el;
         }else{
             prev = el;
         }
     }
+    opal_output(0,"%s",buf);
 }
 
 inline static void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
