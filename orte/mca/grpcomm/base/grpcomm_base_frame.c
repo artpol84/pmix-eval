@@ -40,6 +40,70 @@
 
 #include "orte/mca/grpcomm/base/static-components.h"
 
+
+// TODO: move to OPAL
+
+double orte_grpcomm_get_timestamp(){
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    double ret = tv.tv_sec + tv.tv_usec*1E-6;
+    return ret;
+}
+
+void orte_grpcomm_add_timestep(orte_grpcomm_collective_t *coll,
+                                               char *step_name)
+{
+    orte_grpcomm_colltimings_t *elem;
+    elem = (void*)malloc(sizeof(*elem));
+    if( elem == NULL ){
+        // Do some error handling
+    }
+    elem->step_name = strdup(step_name);
+    // Remove trailing '\n'-s
+    if( elem->step_name[strlen(elem->step_name)-1] == '\n')
+        elem->step_name[strlen(elem->step_name)-1] = '\0';
+    elem->timestep = orte_grpcomm_get_timestamp();
+    opal_list_append (&(coll->timings), (opal_list_item_t *)elem);
+}
+
+void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
+{
+    orte_grpcomm_colltimings_t *el, *prev, *first;
+    int count = 0;
+    int size = opal_list_get_size(&(coll->timings));
+    char *buf = malloc(size*(60+512));
+    buf[0] = '\0';
+    OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
+        count++;
+        if( count > 1){
+            sprintf(buf,"%s[%s] GRPCOMM Timings %lfs[%lfs]: %s\n",buf,
+                    ORTE_NAME_PRINT((&orte_process_info.my_name)),
+                    el->timestep - first->timestep, el->timestep - prev->timestep,
+                    el->step_name);
+            prev = el;
+        }else{
+            first = el;
+            prev = el;
+        }
+    }
+    opal_output(0,"%s",buf);
+    free(buf);
+}
+
+void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
+{
+    orte_grpcomm_colltimings_t *el, *prev;
+    int count = 0;
+    OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
+        if( el->step_name )
+            free(el->step_name);
+    }
+}
+
+// --------------------------------
+
+
+
 /*
  * Global variables
  */
