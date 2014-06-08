@@ -145,13 +145,16 @@ inline static void orte_grpcomm_add_timestep(orte_grpcomm_collective_t *coll,
         // Do some error handling
     }
     elem->step_name = strdup(step_name);
+    // Remove trailing '\n'-s
+    if( elem->step_name[strlen(elem->step_name)-1] == '\n')
+        elem->step_name[strlen(elem->step_name)-1] = '\0';
     elem->timestep = orte_grpcomm_get_timestamp();
     opal_list_append (&(coll->timings), (opal_list_item_t *)elem);
 }
 
 inline static void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
 {
-    orte_grpcomm_colltimings_t *el, *prev;
+    orte_grpcomm_colltimings_t *el, *prev, *first;
     int count = 0;
     int size = opal_list_get_size(&(coll->timings));
     char *buf = malloc(size*(60+512));
@@ -159,11 +162,13 @@ inline static void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
     OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
         count++;
         if( count > 1){
-            sprintf(buf,"%s[GRPCOMM Timings] %lfs[%lfs]: %s\n",buf,
-                    el->timestep, el->timestep - prev->timestep,
+            sprintf(buf,"%s[%s] GRPCOMM Timings %lfs[%lfs]: %s\n",buf,
+                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME),
+                    el->timestep - first->timestep, el->timestep - prev->timestep,
                     el->step_name);
             prev = el;
         }else{
+            first = el;
             prev = el;
         }
     }
