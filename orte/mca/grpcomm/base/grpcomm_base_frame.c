@@ -230,7 +230,7 @@ static void collective_destructor(orte_grpcomm_collective_t *ptr)
         orte_grpcomm_output_timings(ptr);
         orte_grpcomm_clear_timings(ptr);
         opal_output(0,"TIMINGS: call list destruct\n");
-        OPAL_LIST_DESTRUCT(&(ptr->timings));
+        OPAL_LIST_RELEASE(&(ptr->timings));
         opal_output(0,"TIMINGS: call OBJ DESTRUCT for list\n");
         OBJ_DESTRUCT(&(ptr->timings));
     }
