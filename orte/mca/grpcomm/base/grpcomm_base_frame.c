@@ -88,19 +88,19 @@ void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
     }
     opal_output(0,"%s",buf);
     free(buf);
-    opal_output("TIMINGS: Free is successful\n");
+    opal_output(0, "TIMINGS: Free is successful\n");
 }
 
 void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
 {
     orte_grpcomm_colltimings_t *el, *prev;
     int count = 0;
-    opal_output("TIMINGS: start free'ing step_names \n");
+    opal_output(0, "TIMINGS: start free'ing step_names \n");
     OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
         if( el->step_name )
             free(el->step_name);
     }
-    opal_output("TIMINGS: stop free'ing step_names \n");
+    opal_output(0, "TIMINGS: stop free'ing step_names \n");
 }
 
 // --------------------------------
