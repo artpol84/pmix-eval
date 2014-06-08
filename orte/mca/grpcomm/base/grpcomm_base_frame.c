@@ -62,7 +62,8 @@ void orte_grpcomm_add_timestep(orte_grpcomm_collective_t *coll,
     // Remove trailing '\n'-s
     elem->timestep = orte_grpcomm_get_timestamp();
     opal_list_append (&(coll->timings), (opal_list_item_t *)elem);
-    opal_output(0,"%s orte_grpcomm_add_timestep\n",ORTE_NAME_PRINT((&orte_process_info.my_name)));
+    opal_output(0,"%s orte_grpcomm_add_timestep: %s\n",
+                ORTE_NAME_PRINT((&orte_process_info.my_name)), step_name);
 }
 
 void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
