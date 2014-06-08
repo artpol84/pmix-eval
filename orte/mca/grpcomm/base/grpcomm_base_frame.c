@@ -60,8 +60,9 @@ void orte_grpcomm_add_timestep(orte_grpcomm_collective_t *coll,
     }
     elem->step_name = strdup(step_name);
     // Remove trailing '\n'-s
-    if( elem->step_name[strlen(elem->step_name)-1] == '\n')
+/*    if( elem->step_name[strlen(elem->step_name)-1] == '\n')
         elem->step_name[strlen(elem->step_name)-1] = '\0';
+*/
     elem->timestep = orte_grpcomm_get_timestamp();
     opal_list_append (&(coll->timings), (opal_list_item_t *)elem);
 }

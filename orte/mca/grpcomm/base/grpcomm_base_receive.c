@@ -652,6 +652,14 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
      */
     coll = orte_grpcomm_base_setup_collective(id);
 
+#ifdef WANT_ORTE_TIMINGS
+    {
+        char buff[512];
+        sprintf(buff, "[%d] daemon_coll_recv", coll->id);
+        orte_grpcomm_add_timestep(coll, buff);
+    }
+#endif
+
 
 
     /* record that we received a bucket */
