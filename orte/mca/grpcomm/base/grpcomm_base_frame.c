@@ -60,11 +60,9 @@ void orte_grpcomm_add_timestep(orte_grpcomm_collective_t *coll,
     }
     elem->step_name = strdup(step_name);
     // Remove trailing '\n'-s
-/*    if( elem->step_name[strlen(elem->step_name)-1] == '\n')
-        elem->step_name[strlen(elem->step_name)-1] = '\0';
-*/
     elem->timestep = orte_grpcomm_get_timestamp();
     opal_list_append (&(coll->timings), (opal_list_item_t *)elem);
+    opal_output(0,"%s orte_grpcomm_add_timestep\n",ORTE_NAME_PRINT((&orte_process_info.my_name)));
 }
 
 void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
@@ -89,19 +87,19 @@ void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
     }
     opal_output(0,"%s",buf);
     free(buf);
-    opal_output(0, "TIMINGS: Free is successful\n");
+//    opal_output(0, "TIMINGS: Free is successful\n");
 }
 
 void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
 {
     orte_grpcomm_colltimings_t *el, *prev;
     int count = 0;
-    opal_output(0, "TIMINGS: start free'ing step_names \n");
+//    opal_output(0, "TIMINGS: start free'ing step_names \n");
     OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
         if( el->step_name )
             free(el->step_name);
     }
-    opal_output(0, "TIMINGS: stop free'ing step_names \n");
+//    opal_output(0, "TIMINGS: stop free'ing step_names \n");
 }
 
 // --------------------------------
