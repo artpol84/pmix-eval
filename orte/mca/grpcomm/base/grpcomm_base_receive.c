@@ -826,6 +826,7 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
         /* remove this collective */
         opal_list_remove_item(&orte_grpcomm_base.active_colls, &coll->super);
         OBJ_RELEASE(coll);
+        return;
     }
 
     /* determine how many contributors we need to recv - we know
