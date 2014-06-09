@@ -770,8 +770,8 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
 #ifdef WANT_ORTE_TIMINGS
                 {
                     char buff[512];
-                    sprintf(buff, "%s(%d) daemon_coll_recv from %s: orte_grpcomm.xcast for relay",
-                            ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), coll->id, ORTE_NAME_PRINT(sender));
+                    sprintf(buff, "[%d] daemon_coll_recv from %s: orte_grpcomm.xcast for relay",
+                            coll->id, ORTE_NAME_PRINT(sender));
                     orte_grpcomm_add_timestep(coll, buff);
                     orte_grpcomm_output_timings(coll);
                     wildcard = 1;
@@ -795,7 +795,6 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                     sprintf(buff, "[%d] daemon_coll_recv from %s: orte_rml.send_buffer_nb for relay",
                             coll->id, ORTE_NAME_PRINT(sender));
                     orte_grpcomm_add_timestep(coll, buff);
-                    orte_grpcomm_output_timings(coll);
                 }
 #endif
             }

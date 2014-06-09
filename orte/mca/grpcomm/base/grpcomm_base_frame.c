@@ -76,7 +76,7 @@ void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
     OPAL_LIST_FOREACH(el, &(coll->timings), orte_grpcomm_colltimings_t){
         count++;
         if( count > 1){
-            sprintf(buf,"%s[%s] GRPCOMM Timings %lfs[%lfs]: %s\n",buf,
+            sprintf(buf,"%s\n%s GRPCOMM Timings %lfs[%lfs]: %s",buf,
                     ORTE_NAME_PRINT((&orte_process_info.my_name)),
                     el->timestep - first->timestep, el->timestep - prev->timestep,
                     el->step_name);
@@ -86,9 +86,9 @@ void orte_grpcomm_output_timings(orte_grpcomm_collective_t *coll)
             prev = el;
         }
     }
+    sprintf(buf,"%s\n",buf);
     opal_output(0,"%s",buf);
     free(buf);
-//    opal_output(0, "TIMINGS: Free is successful\n");
 }
 
 void orte_grpcomm_clear_timings(orte_grpcomm_collective_t *coll)
@@ -177,6 +177,7 @@ orte_grpcomm_collective_t* orte_grpcomm_base_setup_collective(orte_grpcomm_coll_
     }
     if (NULL == coll) {
         coll = OBJ_NEW(orte_grpcomm_collective_t);
+        opal_output(0,"COLL allocated!: %p\n", coll);
         coll->id = id;
         opal_list_append(&orte_grpcomm_base.active_colls, &coll->super);
     }

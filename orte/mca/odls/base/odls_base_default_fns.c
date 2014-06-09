@@ -412,6 +412,7 @@ int orte_odls_base_default_construct_child_list(opal_buffer_t *data,
 
  COMPLETE:
     /* create the collectives so the job doesn't stall */
+
     coll = orte_grpcomm_base_setup_collective(jdata->peer_modex);
     nm = OBJ_NEW(orte_namelist_t);
     nm->name.jobid = jdata->jobid;
