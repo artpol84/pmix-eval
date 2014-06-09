@@ -193,7 +193,7 @@ void orte_grpcomm_base_xcast_recv(int status, orte_process_name_t* sender,
             char buff[512];
             sprintf(buff, "%s orte_grpcomm_base_xcast_recv: relay to %s",
                     ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), ORTE_NAME_PRINT(&nm->name));
-            orte_grpcomm_add_timestep(coll, buff);
+            orte_grpcomm_add_timestep(&coll, buff);
         }
 #endif
 
