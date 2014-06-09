@@ -187,6 +187,16 @@ void orte_grpcomm_base_xcast_recv(int status, orte_process_name_t* sender,
             OBJ_RELEASE(rly);
             continue;
         }
+
+#ifdef WANT_ORTE_TIMINGS
+        {
+            char buff[512];
+            sprintf(buff, "%s orte_grpcomm_base_xcast_recv: relay to %s",
+                    ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), ORTE_NAME_PRINT(&nm->name));
+            orte_grpcomm_add_timestep(coll, buff);
+        }
+#endif
+
         if (0 > (ret = orte_rml.send_buffer_nb(&nm->name, rly, ORTE_RML_TAG_XCAST,
                                                orte_rml_send_callback, NULL))) {
             ORTE_ERROR_LOG(ret);
