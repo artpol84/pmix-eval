@@ -768,7 +768,14 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                 orte_grpcomm.xcast(nm->name.jobid, relay, ORTE_RML_TAG_DAEMON_COLL);
                 OBJ_RELEASE(relay);
 #ifdef WANT_ORTE_TIMINGS
-                wildcard = 1;
+                {
+                    char buff[512];
+                    sprintf(buff, "%s(%d) daemon_coll_recv from %s: orte_grpcomm.xcast for relay",
+                            ORTE_NAME_PRINT(ORTE_PROC_MY_NAME), coll->id, ORTE_NAME_PRINT(sender));
+                    orte_grpcomm_add_timestep(coll, buff);
+                    orte_grpcomm_output_timings(coll);
+                    wildcard = 1;
+                }
 #endif
             }
             /* otherwise, send to each member, but don't send it back to the
@@ -782,6 +789,15 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                     ORTE_ERROR_LOG(ORTE_ERR_COMM_FAILURE);
                     OBJ_RELEASE(relay);
                 }
+#ifdef WANT_ORTE_TIMINGS
+                {
+                    char buff[512];
+                    sprintf(buff, "[%d] daemon_coll_recv from %s: orte_rml.send_buffer_nb for relay",
+                            coll->id, ORTE_NAME_PRINT(sender));
+                    orte_grpcomm_add_timestep(coll, buff);
+                    orte_grpcomm_output_timings(coll);
+                }
+#endif
             }
             OBJ_RELEASE(nm);
 #ifdef WANT_ORTE_TIMINGS
@@ -796,12 +812,20 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
                 sprintf(buff, "[%d] daemon_coll_recv from %s: relay to %d peers, widcard=%d",
                         coll->id, ORTE_NAME_PRINT(sender), count, wildcard);
                 orte_grpcomm_add_timestep(coll, buff);
+                orte_grpcomm_output_timings(coll);
             }
 #endif
     }
     /* clear the list for reuse */
     while (NULL != (nm = (orte_namelist_t*)opal_list_remove_first(&coll->targets))) {
         OBJ_RELEASE(nm);
+    }
+
+    if( ORTE_PROC_IS_DAEMON && np == coll->num_peer_buckets ){
+        opal_output(0,"Release collective. We are the daemon and don't need it anymore\n");
+        /* remove this collective */
+        opal_list_remove_item(&orte_grpcomm_base.active_colls, &coll->super);
+        OBJ_RELEASE(coll);
     }
 
     /* determine how many contributors we need to recv - we know
@@ -824,7 +848,6 @@ static void daemon_coll_recv(int status, orte_process_name_t* sender,
     }
 
     /* are we done? */
-
 
     if (np != coll->num_global_recvd) {
         OPAL_OUTPUT_VERBOSE((5, orte_grpcomm_base_framework.framework_output,
